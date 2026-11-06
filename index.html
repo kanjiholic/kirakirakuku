@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>30秒九九チャレンジ</title>
+  <title>KUKU BUSYO</title>
   
   <!-- ファビコンおよびiOSホーム画面アイコン -->
   <link rel="icon" href="image_1.png" type="image/png">
@@ -39,12 +39,13 @@
       z-index: -1;
     }
 
+    /* キャラクターサイズ（120px） */
     .spawned-char {
       position: absolute;
-      width: 80px;
+      width: 120px;
       height: auto;
       pointer-events: none;
-      opacity: 0.8;
+      opacity: 0.85;
     }
 
     .container {
@@ -58,6 +59,15 @@
       position: relative;
       overflow: hidden;
       z-index: 1;
+    }
+
+    /* タイトルロゴ画像スタイル */
+    .title-logo {
+      width: 100%;
+      max-width: 280px;
+      height: auto;
+      margin: 0 auto 12px;
+      display: block;
     }
 
     h1 {
@@ -104,7 +114,7 @@
       font-size: 120px;
     }
 
-    /* プレイヤー選択セレクトエリア */
+    /* プレイヤー選択エリア */
     .player-select-box {
       background: #eef2f7;
       border-radius: 12px;
@@ -293,21 +303,29 @@
       color: #e63946;
     }
 
+    /* 記録画面のスクロールコンテナ */
+    .records-container {
+      width: 100%;
+      max-height: 320px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 4px;
+    }
+
     /* 称号一覧リスト */
     .title-list {
       width: 100%;
-      max-height: 250px;
-      overflow-y: auto;
       text-align: left;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding-right: 4px;
+      gap: 6px;
     }
 
     .title-item {
       background: #f8f9fa;
-      padding: 10px 14px;
+      padding: 8px 12px;
       border-radius: 10px;
       border: 1px solid #e9ecef;
       display: flex;
@@ -322,7 +340,7 @@
 
     .title-item .name {
       font-weight: bold;
-      font-size: 15px;
+      font-size: 14px;
       color: #333;
     }
 
@@ -338,6 +356,49 @@
     .title-item.unlocked .condition {
       color: #2e7d32;
       font-weight: bold;
+    }
+
+    /* 苦手問題セクション */
+    .weak-box {
+      background: #fff3f3;
+      border: 1px solid #ffcdd2;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .weak-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #c62828;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .weak-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .weak-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dashed #ffebee;
+      color: #333;
+    }
+
+    .weak-item:last-child {
+      border-bottom: none;
+    }
+
+    .weak-count {
+      font-weight: bold;
+      color: #e63946;
     }
 
     .main-btn {
@@ -387,7 +448,10 @@
 
     <!-- スタート画面 -->
     <div id="start-screen" class="start-screen">
-      <h1>30秒 九九チャレンジ</h1>
+      <!-- タイトルロゴ画像 -->
+      <img src="logo.png" alt="KUKU BUSYO" class="title-logo">
+      
+      <p style="margin-top: 0;">30秒間に何問正解できるかな？<br><small style="color: #666;">（ミスは -1 点 &amp; 即打ち直し）</small></p>
 
       <!-- プレイヤー切替 -->
       <div class="player-select-box">
@@ -466,19 +530,30 @@
       <button class="btn-back" onclick="backToTitle()" style="width: 100%; padding: 12px; margin-top: 4px;">タイトルに戻る</button>
     </div>
 
-    <!-- 称号一覧画面 -->
+    <!-- 称号一覧・きろく画面 -->
     <div id="titles-screen" class="titles-screen hidden">
-      <h1>称号一覧</h1>
+      <h1>称号一覧・きろく</h1>
       <div style="font-size: 14px; color: #666;" id="titles-player-name">プレイヤー1</div>
-      <div style="font-size: 16px; font-weight: bold; color: #1d3557; margin-bottom: 8px;">
+      <div style="font-size: 16px; font-weight: bold; color: #1d3557; margin-bottom: 4px;">
         最高スコア: <span id="titles-highscore">0</span> 点
       </div>
 
-      <div id="title-list" class="title-list">
-        <!-- JSで一覧を生成 -->
+      <div class="records-container">
+        <!-- 苦手問題枠 -->
+        <div class="weak-box">
+          <div class="weak-title">⚠️ にがてなもんだい ワースト5</div>
+          <ul id="weak-list" class="weak-list">
+            <!-- JSで動的生成 -->
+          </ul>
+        </div>
+
+        <!-- 称号リスト -->
+        <div id="title-list" class="title-list">
+          <!-- JSで動的生成 -->
+        </div>
       </div>
 
-      <button class="btn-back" onclick="backToTitle()" style="width: 100%; padding: 12px; margin-top: 8px;">タイトルに戻る</button>
+      <button class="btn-back" onclick="backToTitle()" style="width: 100%; padding: 12px; margin-top: 4px;">タイトルに戻る</button>
     </div>
   </div>
 
@@ -487,6 +562,7 @@
     let countdownTimer = null;
     let timeLeft = 30;
     let score = 0;
+    let currentProblemStr = "";
     let currentAns = 0;
     let inputAnswer = "";
     let feedbackTimer = null;
@@ -506,19 +582,17 @@
       { minScore: 0,  name: "がんばり賞" }
     ];
 
-    // プレイヤーデータ構造
     let currentPlayerIndex = 0;
     let players = [
-      { name: "プレイヤー1", highScore: 0 },
-      { name: "プレイヤー2", highScore: 0 },
-      { name: "プレイヤー3", highScore: 0 },
-      { name: "プレイヤー4", highScore: 0 }
+      { name: "プレイヤー1", highScore: 0, mistakes: {} },
+      { name: "プレイヤー2", highScore: 0, mistakes: {} },
+      { name: "プレイヤー3", highScore: 0, mistakes: {} },
+      { name: "プレイヤー4", highScore: 0, mistakes: {} }
     ];
 
     // Web Audio APIによる効果音
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // 初期化（ローカルストレージから読み込み）
     window.addEventListener('DOMContentLoaded', () => {
       loadPlayerData();
       renderPlayerButtons();
@@ -529,7 +603,12 @@
       const saved = localStorage.getItem('kuku_players_data');
       if (saved) {
         try {
-          players = JSON.parse(saved);
+          const loaded = JSON.parse(saved);
+          players = loaded.map(p => ({
+            name: p.name || "プレイヤー",
+            highScore: p.highScore || 0,
+            mistakes: p.mistakes || {}
+          }));
         } catch(e) {}
       }
       const savedIndex = localStorage.getItem('kuku_current_player');
@@ -551,7 +630,7 @@
     }
 
     function renamePlayer(index, event) {
-      event.stopPropagation(); // ボタンクリックの伝播を防止
+      event.stopPropagation();
       const currentName = players[index].name;
       const newName = prompt("なまえを入力してね（最大8文字）", currentName);
       if (newName && newName.trim() !== "") {
@@ -647,9 +726,9 @@
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      const charSize = 80;
-      const maxX = viewportWidth - charSize;
-      const maxY = viewportHeight - charSize;
+      const charSize = 120;
+      const maxX = Math.max(0, viewportWidth - charSize);
+      const maxY = Math.max(0, viewportHeight - charSize);
 
       const randomX = Math.floor(Math.random() * maxX);
       const randomY = Math.floor(Math.random() * maxY);
@@ -665,6 +744,13 @@
       if (area.lastElementChild) {
         area.removeChild(area.lastElementChild);
       }
+    }
+
+    function recordMistake(problemStr) {
+      const p = players[currentPlayerIndex];
+      if (!p.mistakes) p.mistakes = {};
+      p.mistakes[problemStr] = (p.mistakes[problemStr] || 0) + 1;
+      savePlayerData();
     }
 
     function startCountdown() {
@@ -729,7 +815,8 @@
     function nextProblem() {
       const { num1, num2, ans } = generateProblem();
       currentAns = ans;
-      document.getElementById('problem-display').textContent = `${num1} × ${num2}`;
+      currentProblemStr = `${num1} × ${num2}`;
+      document.getElementById('problem-display').textContent = currentProblemStr;
       inputAnswer = "";
       updateAnswerDisplay();
     }
@@ -747,6 +834,7 @@
         score--;
         document.getElementById('score-display').textContent = score;
         
+        recordMistake(currentProblemStr);
         removeCharacter();
 
         inputAnswer = "";
@@ -783,13 +871,38 @@
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('titles-screen').classList.remove('hidden');
 
-      const currentScore = players[currentPlayerIndex].highScore;
+      const p = players[currentPlayerIndex];
 
+      // 苦手問題トップ5の生成
+      const weakListEl = document.getElementById('weak-list');
+      weakListEl.innerHTML = '';
+      
+      const mistakesObj = p.mistakes || {};
+      const sortedMistakes = Object.keys(mistakesObj)
+        .map(key => ({ problem: key, count: mistakesObj[key] }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      if (sortedMistakes.length === 0) {
+        weakListEl.innerHTML = '<li style="color: #888; font-size: 13px;">まだミスしたもんだいはありません！</li>';
+      } else {
+        sortedMistakes.forEach((item, idx) => {
+          const li = document.createElement('li');
+          li.className = 'weak-item';
+          li.innerHTML = `
+            <span>${idx + 1}位: <strong>${item.problem}</strong></span>
+            <span class="weak-count">${item.count}回ミス</span>
+          `;
+          weakListEl.appendChild(li);
+        });
+      }
+
+      // 称号リストの生成
       const listEl = document.getElementById('title-list');
       listEl.innerHTML = '';
 
       titleMaster.forEach(t => {
-        const isUnlocked = currentScore >= t.minScore;
+        const isUnlocked = p.highScore >= t.minScore;
         const item = document.createElement('div');
         item.className = 'title-item ' + (isUnlocked ? 'unlocked' : '');
         
@@ -827,7 +940,6 @@
       document.getElementById('final-score').textContent = score;
       document.getElementById('rank-display').textContent = getRankTitle(score);
 
-      // ハイスコア判定＆保存
       if (score > players[currentPlayerIndex].highScore) {
         players[currentPlayerIndex].highScore = score;
         savePlayerData();
