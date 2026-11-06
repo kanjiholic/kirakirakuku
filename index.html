@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>30秒九九チャレンジ</title>
   
-  <!-- ファビコンおよびiOSホーム画面アイコンの設定 -->
-  <link rel="icon" href="image_1.png" type="image/png">
-  <link rel="apple-touch-icon" href="image_1.png">
+  <!-- ファビコンおよびiOSホーム画面アイコン（大文字の.PNGに合わせています） -->
+  <link rel="icon" href="hideyoshi.PNG" type="image/png">
+  <link rel="apple-touch-icon" href="hideyoshi.PNG">
 
   <style>
     * {
@@ -39,7 +39,6 @@
       z-index: -1;
     }
 
-    /* 動的に作成されるキャラクター画像 */
     .spawned-char {
       position: absolute;
       width: 80px;
@@ -207,6 +206,27 @@
       gap: 16px;
     }
 
+    /* 結果画面の称号スタイル */
+    .rank-box {
+      background: #eef2f7;
+      padding: 12px 20px;
+      border-radius: 12px;
+      margin: 8px 0;
+      width: 100%;
+    }
+
+    .rank-title {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .rank-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #e63946;
+    }
+
     .main-btn {
       width: 100%;
       padding: 16px;
@@ -278,7 +298,13 @@
     <!-- 結果画面 -->
     <div id="result-screen" class="result-screen hidden">
       <h1>タイムアップ！</h1>
-      <p style="font-size: 24px;">スコア: <strong id="final-score" style="color: #e63946;">0</strong> 点</p>
+      <p style="font-size: 22px; margin: 4px 0;">スコア: <strong id="final-score" style="color: #1d3557;">0</strong> 点</p>
+
+      <div class="rank-box">
+        <div class="rank-title">獲得した称号</div>
+        <div id="rank-display" class="rank-name">-</div>
+      </div>
+
       <button class="main-btn" onclick="startCountdown()">もう一度遊ぶ</button>
       <button class="btn-back" onclick="backToTitle()" style="width: 100%; padding: 12px; margin-top: 4px;">タイトルに戻る</button>
     </div>
@@ -294,8 +320,8 @@
     let feedbackTimer = null;
     let isPlaying = false;
 
-    // キャラクター画像のファイル名配列
-    const characterImages = ['image_0.png', 'image_1.png', 'image_2.png'];
+    // アップロードされている画像ファイル名に合わせています
+    const characterImages = ['ieyasu.PNG', 'hideyoshi.PNG', 'nobunaga.PNG'];
 
     // Web Audio APIによる効果音
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -353,7 +379,6 @@
       }, 300);
     }
 
-    // キャラクターを画面上にランダム配置する関数
     function spawnCharacter() {
       const area = document.getElementById('character-area');
       const imgIndex = Math.floor(Math.random() * characterImages.length);
@@ -377,7 +402,6 @@
       area.appendChild(img);
     }
 
-    // キャラクターを1個削除する関数
     function removeCharacter() {
       const area = document.getElementById('character-area');
       if (area.lastElementChild) {
@@ -464,7 +488,6 @@
         score--;
         document.getElementById('score-display').textContent = score;
         
-        // 不正解時にキャラクターを1個消す
         removeCharacter();
 
         inputAnswer = "";
@@ -490,6 +513,16 @@
       document.getElementById('answer-display').textContent = inputAnswer;
     }
 
+    function getRankTitle(score) {
+      if (score >= 30) return "みんなのあこがれ九九はかせ！";
+      if (score >= 25) return "かんぺき九九たつじん";
+      if (score >= 20) return "そこそこすごい九九めいじん";
+      if (score >= 15) return "ちょっとすごい九九せんせい";
+      if (score >= 10) return "ふつうの九九小学生";
+      if (score >= 5)  return "ちゃっぽけ九九みならい";
+      return "がんばり賞";
+    }
+
     function backToTitle() {
       isPlaying = false;
       clearInterval(timer);
@@ -506,9 +539,10 @@
       isPlaying = false;
       clearInterval(timer);
       document.getElementById('game-screen').classList.add('hidden');
-      document.getElementById('result-screen').classList.add('hidden');
       document.getElementById('result-screen').classList.remove('hidden');
+      
       document.getElementById('final-score').textContent = score;
+      document.getElementById('rank-display').textContent = getRankTitle(score);
     }
   </script>
 </body>
