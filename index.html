@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>30秒九九チャレンジ</title>
   
-  <!-- ファビコンおよびiOSホーム画面アイコン（大文字の.PNGに合わせています） -->
-  <link rel="icon" href="hideyoshi.PNG" type="image/png">
-  <link rel="apple-touch-icon" href="hideyoshi.PNG">
+  <!-- ファビコンおよびiOSホーム画面アイコン（image_1.pngに統一） -->
+  <link rel="icon" href="image_1.png" type="image/png">
+  <link rel="apple-touch-icon" href="image_1.png">
 
   <style>
     * {
@@ -50,7 +50,7 @@
     .container {
       width: 100%;
       max-width: 400px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 20px;
       padding: 24px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -199,19 +199,19 @@
       grid-column: 2;
     }
 
-    .start-screen, .result-screen {
+    .start-screen, .result-screen, .titles-screen {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
-    /* 結果画面の称号スタイル */
+    /* 称号ボックス */
     .rank-box {
       background: #eef2f7;
       padding: 12px 20px;
       border-radius: 12px;
-      margin: 8px 0;
+      margin: 4px 0;
       width: 100%;
     }
 
@@ -225,6 +225,53 @@
       font-size: 20px;
       font-weight: bold;
       color: #e63946;
+    }
+
+    /* 称号一覧リスト */
+    .title-list {
+      width: 100%;
+      max-height: 250px;
+      overflow-y: auto;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+    }
+
+    .title-item {
+      background: #f8f9fa;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title-item.unlocked {
+      background: #e8f5e9;
+      border-color: #a5d6a7;
+    }
+
+    .title-item .name {
+      font-weight: bold;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .title-item.unlocked .name {
+      color: #2e7d32;
+    }
+
+    .title-item .condition {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .title-item.unlocked .condition {
+      color: #2e7d32;
+      font-weight: bold;
     }
 
     .main-btn {
@@ -241,7 +288,21 @@
       touch-action: manipulation;
     }
 
-    .main-btn:active {
+    .sub-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #2b2d42;
+      background-color: #e0e1dd;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 0 #bdc3c7;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .main-btn:active, .sub-btn:active {
       transform: translateY(4px);
       box-shadow: none;
     }
@@ -262,7 +323,13 @@
     <div id="start-screen" class="start-screen">
       <h1>30秒 九九チャレンジ</h1>
       <p>30秒間に何問正解できるかな？<br><small style="color: #666;">（ミスは -1 点 &amp; 即打ち直し）</small></p>
+      
+      <div style="font-size: 16px; font-weight: bold; color: #1d3557; margin: 4px 0;">
+        最高スコア: <span id="top-highscore">0</span> 点
+      </div>
+
       <button class="main-btn" onclick="startCountdown()">スタート</button>
+      <button class="sub-btn" onclick="showTitlesScreen()">称号一覧・きろく</button>
     </div>
 
     <!-- プレイ画面 -->
@@ -308,6 +375,20 @@
       <button class="main-btn" onclick="startCountdown()">もう一度遊ぶ</button>
       <button class="btn-back" onclick="backToTitle()" style="width: 100%; padding: 12px; margin-top: 4px;">タイトルに戻る</button>
     </div>
+
+    <!-- 称号一覧画面 -->
+    <div id="titles-screen" class="titles-screen hidden">
+      <h1>称号一覧</h1>
+      <div style="font-size: 16px; font-weight: bold; color: #1d3557; margin-bottom: 8px;">
+        最高スコア: <span id="titles-highscore">0</span> 点
+      </div>
+
+      <div id="title-list" class="title-list">
+        <!-- JSで一覧を生成 -->
+      </div>
+
+      <button class="btn-back" onclick="backToTitle()" style="width: 100%; padding: 12px; margin-top: 8px;">タイトルに戻る</button>
+    </div>
   </div>
 
   <script>
@@ -319,12 +400,38 @@
     let inputAnswer = "";
     let feedbackTimer = null;
     let isPlaying = false;
+    let highScore = 0;
 
-    // アップロードされている画像ファイル名に合わせています
-    const characterImages = ['ieyasu.PNG', 'hideyoshi.PNG', 'nobunaga.PNG'];
+    // 画像ファイル名を image_0.png 〜 image_2.png に設定
+    const characterImages = ['image_0.png', 'image_1.png', 'image_2.png'];
+
+    // 称号マスターデータ
+    const titleMaster = [
+      { minScore: 30, name: "みんなのあこがれ九九はかせ！" },
+      { minScore: 25, name: "かんぺき九九たつじん" },
+      { minScore: 20, name: "そこそこすごい九九めいじん" },
+      { minScore: 15, name: "ちょっとすごい九九せんせい" },
+      { minScore: 10, name: "ふつうの九九小学生" },
+      { minScore: 5,  name: "ちゃっぽけ九九みならい" },
+      { minScore: 0,  name: "がんばり賞" }
+    ];
 
     // Web Audio APIによる効果音
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // 初期化（ローカルストレージからハイスコア読み込み）
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedScore = localStorage.getItem('kuku_highscore');
+      if (savedScore !== null) {
+        highScore = parseInt(savedScore, 10);
+      }
+      updateHighScoreDisplay();
+    });
+
+    function updateHighScoreDisplay() {
+      document.getElementById('top-highscore').textContent = highScore;
+      document.getElementById('titles-highscore').textContent = highScore;
+    }
 
     function playSound(type) {
       if (audioCtx.state === 'suspended') {
@@ -413,6 +520,7 @@
       isPlaying = false;
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('titles-screen').classList.add('hidden');
       document.getElementById('game-screen').classList.remove('hidden');
 
       document.getElementById('character-area').innerHTML = '';
@@ -514,13 +622,33 @@
     }
 
     function getRankTitle(score) {
-      if (score >= 30) return "みんなのあこがれ九九はかせ！";
-      if (score >= 25) return "かんぺき九九たつじん";
-      if (score >= 20) return "そこそこすごい九九めいじん";
-      if (score >= 15) return "ちょっとすごい九九せんせい";
-      if (score >= 10) return "ふつうの九九小学生";
-      if (score >= 5)  return "ちゃっぽけ九九みならい";
+      for (let t of titleMaster) {
+        if (score >= t.minScore) return t.name;
+      }
       return "がんばり賞";
+    }
+
+    function showTitlesScreen() {
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('titles-screen').classList.remove('hidden');
+
+      const listEl = document.getElementById('title-list');
+      listEl.innerHTML = '';
+
+      titleMaster.forEach(t => {
+        const isUnlocked = highScore >= t.minScore;
+        const item = document.createElement('div');
+        item.className = 'title-item ' + (isUnlocked ? 'unlocked' : '');
+        
+        const condText = t.minScore === 0 ? "初期" : `${t.minScore}点以上`;
+        const statusText = isUnlocked ? "★ 獲得済み" : `${condText}`;
+
+        item.innerHTML = `
+          <div class="name">${t.name}</div>
+          <div class="condition">${statusText}</div>
+        `;
+        listEl.appendChild(item);
+      });
     }
 
     function backToTitle() {
@@ -530,9 +658,11 @@
       document.getElementById('feedback').className = 'feedback-overlay';
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('titles-screen').classList.add('hidden');
       document.getElementById('start-screen').classList.remove('hidden');
       
       document.getElementById('character-area').innerHTML = '';
+      updateHighScoreDisplay();
     }
 
     function endGame() {
@@ -543,6 +673,12 @@
       
       document.getElementById('final-score').textContent = score;
       document.getElementById('rank-display').textContent = getRankTitle(score);
+
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('kuku_highscore', highScore);
+      }
+      updateHighScoreDisplay();
     }
   </script>
 </body>
