@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>30秒九九チャレンジ</title>
   
-  <!-- ファビコンおよびiOSホーム画面アイコン（image_1.pngに統一） -->
+  <!-- ファビコンおよびiOSホーム画面アイコン -->
   <link rel="icon" href="image_1.png" type="image/png">
   <link rel="apple-touch-icon" href="image_1.png">
 
@@ -104,12 +104,78 @@
       font-size: 120px;
     }
 
+    /* プレイヤー選択セレクトエリア */
+    .player-select-box {
+      background: #eef2f7;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .player-select-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    .player-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .player-btn {
+      padding: 10px 6px;
+      font-size: 14px;
+      font-weight: bold;
+      background: #ffffff;
+      color: #2b2d42;
+      border: 2px solid #d8e2dc;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .player-btn.active {
+      background: #457b9d;
+      color: white;
+      border-color: #1d3557;
+    }
+
+    .player-name-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 110px;
+    }
+
+    .edit-name-btn {
+      font-size: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+
     /* ゲーム中の上部コントロール */
     .game-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
+    }
+
+    .current-player-tag {
+      font-size: 14px;
+      font-weight: bold;
+      color: #457b9d;
+      background: #eef2f7;
+      padding: 4px 10px;
+      border-radius: 8px;
     }
 
     .btn-back {
@@ -322,9 +388,31 @@
     <!-- スタート画面 -->
     <div id="start-screen" class="start-screen">
       <h1>30秒 九九チャレンジ</h1>
-      <p>30秒間に何問正解できるかな？<br><small style="color: #666;">（ミスは -1 点 &amp; 即打ち直し）</small></p>
-      
-      <div style="font-size: 16px; font-weight: bold; color: #1d3557; margin: 4px 0;">
+
+      <!-- プレイヤー切替 -->
+      <div class="player-select-box">
+        <div class="player-select-label">🎮 プレイヤーをえらんでね</div>
+        <div class="player-buttons">
+          <div class="player-btn" id="pbtn-0" onclick="selectPlayer(0)">
+            <span class="player-name-text" id="pname-0">プレイヤー1</span>
+            <button class="edit-name-btn" onclick="renamePlayer(0, event)">✏️</button>
+          </div>
+          <div class="player-btn" id="pbtn-1" onclick="selectPlayer(1)">
+            <span class="player-name-text" id="pname-1">プレイヤー2</span>
+            <button class="edit-name-btn" onclick="renamePlayer(1, event)">✏️</button>
+          </div>
+          <div class="player-btn" id="pbtn-2" onclick="selectPlayer(2)">
+            <span class="player-name-text" id="pname-2">プレイヤー3</span>
+            <button class="edit-name-btn" onclick="renamePlayer(2, event)">✏️</button>
+          </div>
+          <div class="player-btn" id="pbtn-3" onclick="selectPlayer(3)">
+            <span class="player-name-text" id="pname-3">プレイヤー4</span>
+            <button class="edit-name-btn" onclick="renamePlayer(3, event)">✏️</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size: 16px; font-weight: bold; color: #1d3557; margin: 2px 0;">
         最高スコア: <span id="top-highscore">0</span> 点
       </div>
 
@@ -336,6 +424,7 @@
     <div id="game-screen" class="hidden">
       <div class="game-header">
         <button class="btn-back" onclick="backToTitle()">タイトルへ戻る</button>
+        <span class="current-player-tag" id="game-player-name">プレイヤー1</span>
       </div>
 
       <div class="status-bar">
@@ -365,6 +454,7 @@
     <!-- 結果画面 -->
     <div id="result-screen" class="result-screen hidden">
       <h1>タイムアップ！</h1>
+      <div style="font-size: 14px; color: #666;" id="result-player-name">プレイヤー1</div>
       <p style="font-size: 22px; margin: 4px 0;">スコア: <strong id="final-score" style="color: #1d3557;">0</strong> 点</p>
 
       <div class="rank-box">
@@ -379,6 +469,7 @@
     <!-- 称号一覧画面 -->
     <div id="titles-screen" class="titles-screen hidden">
       <h1>称号一覧</h1>
+      <div style="font-size: 14px; color: #666;" id="titles-player-name">プレイヤー1</div>
       <div style="font-size: 16px; font-weight: bold; color: #1d3557; margin-bottom: 8px;">
         最高スコア: <span id="titles-highscore">0</span> 点
       </div>
@@ -400,9 +491,8 @@
     let inputAnswer = "";
     let feedbackTimer = null;
     let isPlaying = false;
-    let highScore = 0;
 
-    // 画像ファイル名を image_0.png 〜 image_2.png に設定
+    // 画像ファイル名
     const characterImages = ['image_0.png', 'image_1.png', 'image_2.png'];
 
     // 称号マスターデータ
@@ -416,21 +506,82 @@
       { minScore: 0,  name: "がんばり賞" }
     ];
 
+    // プレイヤーデータ構造
+    let currentPlayerIndex = 0;
+    let players = [
+      { name: "プレイヤー1", highScore: 0 },
+      { name: "プレイヤー2", highScore: 0 },
+      { name: "プレイヤー3", highScore: 0 },
+      { name: "プレイヤー4", highScore: 0 }
+    ];
+
     // Web Audio APIによる効果音
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // 初期化（ローカルストレージからハイスコア読み込み）
+    // 初期化（ローカルストレージから読み込み）
     window.addEventListener('DOMContentLoaded', () => {
-      const savedScore = localStorage.getItem('kuku_highscore');
-      if (savedScore !== null) {
-        highScore = parseInt(savedScore, 10);
-      }
-      updateHighScoreDisplay();
+      loadPlayerData();
+      renderPlayerButtons();
+      updatePlayerUI();
     });
 
-    function updateHighScoreDisplay() {
-      document.getElementById('top-highscore').textContent = highScore;
-      document.getElementById('titles-highscore').textContent = highScore;
+    function loadPlayerData() {
+      const saved = localStorage.getItem('kuku_players_data');
+      if (saved) {
+        try {
+          players = JSON.parse(saved);
+        } catch(e) {}
+      }
+      const savedIndex = localStorage.getItem('kuku_current_player');
+      if (savedIndex !== null) {
+        currentPlayerIndex = parseInt(savedIndex, 10);
+      }
+    }
+
+    function savePlayerData() {
+      localStorage.setItem('kuku_players_data', JSON.stringify(players));
+      localStorage.setItem('kuku_current_player', currentPlayerIndex);
+    }
+
+    function selectPlayer(index) {
+      currentPlayerIndex = index;
+      savePlayerData();
+      renderPlayerButtons();
+      updatePlayerUI();
+    }
+
+    function renamePlayer(index, event) {
+      event.stopPropagation(); // ボタンクリックの伝播を防止
+      const currentName = players[index].name;
+      const newName = prompt("なまえを入力してね（最大8文字）", currentName);
+      if (newName && newName.trim() !== "") {
+        players[index].name = newName.trim().slice(0, 8);
+        savePlayerData();
+        renderPlayerButtons();
+        updatePlayerUI();
+      }
+    }
+
+    function renderPlayerButtons() {
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById(`pbtn-${i}`);
+        const nameEl = document.getElementById(`pname-${i}`);
+        nameEl.textContent = players[i].name;
+        if (i === currentPlayerIndex) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    }
+
+    function updatePlayerUI() {
+      const p = players[currentPlayerIndex];
+      document.getElementById('top-highscore').textContent = p.highScore;
+      document.getElementById('titles-highscore').textContent = p.highScore;
+      document.getElementById('game-player-name').textContent = p.name;
+      document.getElementById('result-player-name').textContent = p.name;
+      document.getElementById('titles-player-name').textContent = p.name;
     }
 
     function playSound(type) {
@@ -632,11 +783,13 @@
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('titles-screen').classList.remove('hidden');
 
+      const currentScore = players[currentPlayerIndex].highScore;
+
       const listEl = document.getElementById('title-list');
       listEl.innerHTML = '';
 
       titleMaster.forEach(t => {
-        const isUnlocked = highScore >= t.minScore;
+        const isUnlocked = currentScore >= t.minScore;
         const item = document.createElement('div');
         item.className = 'title-item ' + (isUnlocked ? 'unlocked' : '');
         
@@ -662,7 +815,7 @@
       document.getElementById('start-screen').classList.remove('hidden');
       
       document.getElementById('character-area').innerHTML = '';
-      updateHighScoreDisplay();
+      updatePlayerUI();
     }
 
     function endGame() {
@@ -674,11 +827,12 @@
       document.getElementById('final-score').textContent = score;
       document.getElementById('rank-display').textContent = getRankTitle(score);
 
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('kuku_highscore', highScore);
+      // ハイスコア判定＆保存
+      if (score > players[currentPlayerIndex].highScore) {
+        players[currentPlayerIndex].highScore = score;
+        savePlayerData();
       }
-      updateHighScoreDisplay();
+      updatePlayerUI();
     }
   </script>
 </body>
